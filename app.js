@@ -43,7 +43,7 @@ app.use(require('express-session')({
   saveUninitialized: false,
   cookie: {
     path: '/',
-    domain: config.cookie.domain,
+    //domain: config.cookie.domain,
     //httpOnly: true,
     //secure: true,
     maxAge:3600000 //1 hour
@@ -73,14 +73,26 @@ app.use(function(req,res,next){
   next();
 });
 
-//~line 78
+//Set up CORS
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Credentials', true);
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+  if ('OPTIONS' == req.method) {
+    res.send(200);
+  } else {
+    next();
+  }
+});
+
 //Session-based access control
 app.use(function(req,res,next){
   //Uncomment the following line to allow access to everything.
-  //return next();
+  return next();
 
   //Allow any endpoint that is an exact match. The server does not
-  //have access to the hash so /auth and /auth#xxx would bot be considered 
+  //have access to the hash so /auth and /auth#xxx would bot be considered
   //exact matches.
   var whitelist = [
     '/',
@@ -101,11 +113,12 @@ app.use(function(req,res,next){
   var subs = [
     '/public/',
     '/api/auth/',
-    '/articles'
+    '/articles',
+    '/ionicUsers'
   ];
 
   //The query string provides a partial URL match beginning
-  //at position 0. Both /api/auth/login and /api/auth/logout would would 
+  //at position 0. Both /api/auth/login and /api/auth/logout would would
   //be considered a match for /api/auth/
   for(var sub of subs){
     if(req.url.substring(0, sub.length)===sub){
